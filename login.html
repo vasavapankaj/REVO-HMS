@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - REVO HMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+    <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--fros-blue-color) 0%, #0038a8 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        .login-card h2 {
+            margin-bottom: 30px;
+            color: var(--fros-blue-color);
+        }
+        .login-logo {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            border-color: var(--fros-blue-color);
+            box-shadow: 0 0 0 3px rgba(0, 80, 213, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .error-msg {
+            color: #f44336;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <img src="images/logo.png" alt="REVO HMS" class="login-logo">
+        <h2>Admin Login</h2>
+        <p id="errorMessage" class="error-msg">Invalid username or password.</p>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-blue btn-login">Login</button>
+        </form>
+        <div style="margin-top: 20px;">
+            <a href="index.html" class="text-blue"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            try {
+                const response = await fetch('api/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = 'admin.html';
+                } else {
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = data.message || 'Login failed.';
+                }
+            } catch (err) {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = 'Server error. Please try again later.';
+            }
+        });
+    </script>
+</body>
+</html>

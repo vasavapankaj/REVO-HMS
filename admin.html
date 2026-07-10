@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - REVO HMS</title>
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css"
+        integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="REVO Logo" class="admin-logo">
+                <h3>REVO Admin</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active" data-module="dashboard">
+                        <a href="#"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+                    </li>
+                    <li data-module="patients">
+                        <a href="#"><i class="fas fa-user-injured"></i> <span>Patients</span></a>
+                    </li>
+                    <li data-module="doctors">
+                        <a href="#"><i class="fas fa-user-md"></i> <span>Doctors</span></a>
+                    </li>
+                    <li data-module="pharmacy">
+                        <a href="#"><i class="fas fa-pills"></i> <span>Pharmacy</span></a>
+                    </li>
+                    <li data-module="appointments">
+                        <a href="#"><i class="fas fa-calendar-check"></i> <span>Appointments</span></a>
+                    </li>
+                    <li data-module="wards">
+                        <a href="#"><i class="fas fa-bed"></i> <span>Ward / Bed</span></a>
+                    </li>
+                    <li data-module="reports">
+                        <a href="#"><i class="fas fa-chart-line"></i> <span>Reports</span></a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="api/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-left">
+                    <button id="sidebar-toggle" class="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="current-module-title">Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <div class="admin-profile">
+                        <span>Admin</span>
+                        <img src="images/doc-3.png" alt="Admin Profile" class="profile-img">
+                    </div>
+                </div>
+            </header>
+
+            <section id="module-content" class="module-content">
+                <!-- Data will be loaded here dynamically -->
+                <div id="dashboard-view" class="module-view active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <h4>Total Patients</h4>
+                                <p id="stat-patients">1,240</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                            <div class="stat-info">
+                                <h4>Appointments</h4>
+                                <p id="stat-appointments">42</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-pills"></i></div>
+                            <div class="stat-info">
+                                <h4>Low Stock</h4>
+                                <p id="stat-pharmacy">12 Items</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-bed"></i></div>
+                            <div class="stat-info">
+                                <h4>Available Beds</h4>
+                                <p id="stat-beds">15/50</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-charts" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="card">
+                            <h3>Weekly Patient Inflow</h3>
+                            <canvas id="patientChart" style="max-height: 250px;"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3>Department Appointments</h3>
+                            <canvas id="deptChart" style="max-height: 250px;"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3>Patient Status Distribution</h3>
+                            <canvas id="statusChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Module Views (Hidden by default) -->
+                <div id="patients-view" class="module-view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Patient Management</h3>
+                            <button class="btn btn-blue" onclick="openModal('patientModal')">Add Patient</button>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patient-list">
+                                <!-- JS items -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Doctor Management View -->
+                <div id="doctors-view" class="module-view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Doctor Management</h3>
+                            <button class="btn btn-blue" onclick="openModal('doctorModal')">Add Doctor</button>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Specialization</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doctor-list">
+                                <!-- JS items -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Appointments Management View -->
+                <div id="appointments-view" class="module-view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Appointments</h3>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointment-list">
+                                <!-- JS items -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pharmacy Management View -->
+                <div id="pharmacy-view" class="module-view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Pharmacy Management</h3>
+                            <button class="btn btn-blue" onclick="openModal('pharmacyModal')">Add Medicine</button>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Stock</th>
+                                    <th>Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pharmacy-list">
+                                <!-- JS items -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Ward / Bed Management View -->
+                <div id="wards-view" class="module-view">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-bed"></i></div>
+                            <div class="stat-info">
+                                <h4>General Ward</h4>
+                                <p>12/30 Available</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-procedures"></i></div>
+                            <div class="stat-info">
+                                <h4>ICU</h4>
+                                <p>3/10 Available</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Bed Allocation</h3>
+                            <button class="btn btn-blue" onclick="openModal('addBedModal')">Allocate Bed</button>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Bed No</th>
+                                    <th>Patient</th>
+                                    <th>Ward</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bed-list">
+                                <!-- JS items -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports & Analytics View -->
+                <div id="reports-view" class="module-view">
+                    <div class="dashboard-charts">
+                        <div class="card">
+                            <h3>Monthly Patient Growth</h3>
+                            <div class="placeholder-chart"
+                                style="height: 250px; display: flex; align-items: flex-end; gap: 8px; padding: 20px; background: #fdfdfd; border-radius: 10px;">
+                                <div style="flex: 1; height: 30%; background: var(--fros-blue-color); opacity: 0.6;">
+                                </div>
+                                <div style="flex: 1; height: 45%; background: var(--fros-blue-color); opacity: 0.7;">
+                                </div>
+                                <div style="flex: 1; height: 60%; background: var(--fros-blue-color); opacity: 0.8;">
+                                </div>
+                                <div style="flex: 1; height: 55%; background: var(--fros-blue-color); opacity: 0.9;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 85%; background: var(--fros-blue-color); border-top: 4px solid var(--light-blue-color);">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Departmental Distribution</h3>
+                            <div class="placeholder-chart" style="height: 250px; padding: 20px;">
+                                <div style="width: 100%; display: flex; flex-direction: column; gap: 15px;">
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <span>Cardiology</span><span>40%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: #eee; border-radius: 4px;">
+                                            <div
+                                                style="width: 40%; height: 100%; background: var(--fros-blue-color); border-radius: 4px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <span>Neurology</span><span>25%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: #eee; border-radius: 4px;">
+                                            <div
+                                                style="width: 25%; height: 100%; background: var(--light-blue-color); border-radius: 4px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <span>Pharmacy</span><span>35%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: #eee; border-radius: 4px;">
+                                            <div
+                                                style="width: 35%; height: 100%; background: var(--fros-blue-color); opacity: 0.5; border-radius: 4px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More module views will be implemented soon -->
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('patientModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Add New Patient</h3>
+                <form id="addPatientForm">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="pat-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="pat-age" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="pat-status">
+                            <option>In-Patient</option>
+                            <option>Out-Patient</option>
+                            <option>Discharged</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Save Patient</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Patient Modal -->
+    <div id="editPatientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editPatientModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Edit Patient</h3>
+                <form id="editPatientForm">
+                    <input type="hidden" id="edit-pat-id">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="edit-pat-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="edit-pat-age" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="edit-pat-status">
+                            <option>In-Patient</option>
+                            <option>Out-Patient</option>
+                            <option>Discharged</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Update Patient</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Modal -->
+    <div id="doctorModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('doctorModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Add New Doctor</h3>
+                <form id="addDoctorForm">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="doc-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Specialization</label>
+                        <input type="text" id="doc-spec" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="doc-status">
+                            <option>Available</option>
+                            <option>On Leave</option>
+                            <option>In Surgery</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Save Doctor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Doctor Modal -->
+    <div id="editDoctorModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editDoctorModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Edit Doctor</h3>
+                <form id="editDoctorForm">
+                    <input type="hidden" id="edit-doc-id">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="edit-doc-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Specialization</label>
+                        <input type="text" id="edit-doc-spec" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="edit-doc-status">
+                            <option>Available</option>
+                            <option>On Leave</option>
+                            <option>In Surgery</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Update Doctor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pharmacy Modal -->
+    <div id="pharmacyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('pharmacyModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Add Medicine</h3>
+                <form id="addMedicineForm">
+                    <div class="form-group">
+                        <label>Medicine Name</label>
+                        <input type="text" id="med-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input type="number" id="med-stock" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price ($)</label>
+                        <input type="number" step="0.01" id="med-price" required>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Add to Inventory</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Pharmacy Modal -->
+    <div id="editPharmacyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editPharmacyModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Edit Medicine</h3>
+                <form id="editMedicineForm">
+                    <input type="hidden" id="edit-med-id">
+                    <div class="form-group">
+                        <label>Medicine Name</label>
+                        <input type="text" id="edit-med-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input type="number" id="edit-med-stock" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price ($)</label>
+                        <input type="number" step="0.01" id="edit-med-price" required>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bed Modal -->
+    <div id="addBedModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addBedModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Allocate Bed</h3>
+                <form id="addBedForm">
+                    <div class="form-group">
+                        <label>Bed No</label>
+                        <input type="text" id="bed-no" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" id="bed-patient" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ward</label>
+                        <select id="bed-ward">
+                            <option>General Ward</option>
+                            <option>ICU</option>
+                            <option>Cardiology</option>
+                            <option>Neurology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="bed-status">
+                            <option>Occupied</option>
+                            <option>Available</option>
+                            <option>Maintenance</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Allocate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bed Modal -->
+    <div id="editBedModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editBedModal')">&times;</span>
+            <div class="modal-body">
+                <h3>Edit Allocated Bed</h3>
+                <form id="editBedForm">
+                    <input type="hidden" id="edit-bed-id">
+                    <div class="form-group">
+                        <label>Bed No</label>
+                        <input type="text" id="edit-bed-no" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input type="text" id="edit-bed-patient" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ward</label>
+                        <select id="edit-bed-ward">
+                            <option>General Ward</option>
+                            <option>ICU</option>
+                            <option>Cardiology</option>
+                            <option>Neurology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="edit-bed-status">
+                            <option>Occupied</option>
+                            <option>Available</option>
+                            <option>Maintenance</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-blue">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="admin.js?v=5"></script>
+</body>
+
+</html>
